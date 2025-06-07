@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>搜索</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-white">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>NKU风雨声</h3>
+        {% if user %}
+            <div>
+                <span>欢迎，{{ user }}</span>
+                <a href="/history" class="btn btn-outline-secondary btn-sm"> 搜索历史 </a>
+                <a href="/logout" class="btn btn-outline-danger btn-sm"> 退出 </a>
+            </div>
+        {% else %}
+            <a href="/login" class="btn btn-primary"> 登录 </a>
+        {% endif %}
+    </div>
+
+    <form method="POST" class="row g-3 align-items-center mb-4">
+        <div class="col-md-4 position-relative">
+        <input type="text" id="queryInput" name="query" class="form-control" placeholder="输入关键词" autocomplete="off" required>
+        <div id="historyDropdown" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
+        </div>
+
+        <div class="col-md-2">
+            <input type="text" name="site" class="form-control" placeholder="站内查询">
+        </div>
+        <div class="col-md-2">
+            <select name="type" class="form-select">
+                <option value="web"> 网页 </option>
+                <option value="doc"> 文档 </option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <input type="checkbox" name="exact"> 短语查询
+        </div>
+        <div class="col-md-1">
+            <input type="checkbox" name="wildcard"> 通配查询
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success w-100"> 搜索 </button>
+        </div>
+    </form>
+
+    {% if results %}
+        <h5>搜索结果：{{ results|length }} 条</h5>
+        <ul class="list-group">
+            {% for r in results %}
+                <li class="list-group-item">
+                    <!--<h6>{{ r.title }}</h6>-->
+                    <strong>{{ r.title }}</strong><br>
+                    <a href="{{ r.url }}" target="_blank">网址:{{ r.url }}</a><br>
+             
+                    <!--{% if r.snapshot %}<small>快照: {{ r.snapshot }}</small><br>{% endif %}-->
+                    {% if r.snapshot %}
+                         <a href="{{ r.snapshot }}" target="_blank">📷 查看快照(2025.5.21)</a>
+                    {% endif %}
+                    <!--<small>类型: {{ r.type }} | 分数: {{ r.score }}</small>-->
+                    <small>类型: {{ r.type }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    
+    {% if recommended %}
+        <h5 class="mt-4">为你推荐</h5>
+        <ul class="list-group">
+            {% for r in recommended %}
+            <li class="list-group-item">
+                <strong>{{ r.title }}</strong><br>
+                <a href="{{ r.url }}" target="_blank">{{ r.url }}</a><br>
+                {% if r.snapshot %}
+                    <a href="{{ r.snapshot }}" target="_blank">📷 查看快照(2025.5.21)</a>
+                {% endif %}
+                <small>类型: {{ r.type }} </small>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    
+</div>
+<script>
+document.getElementById("queryInput").addEventListener("focus", async function () {
+    const res = await fetch("/api/recent_queries");
+    const data = await res.json();
+    const dropdown = document.getElementById("historyDropdown");
+    dropdown.innerHTML = "";
+
+    if (data.length > 0) {
+        data.forEach(q => {
+            const item = document.createElement("div");
+            item.className = "list-group-item list-group-item-action";
+            item.style.cursor = "pointer";
+            item.textContent = q;
+            item.onclick = () => {
+                document.getElementById("queryInput").value = q;
+                dropdown.style.display = "none";
+                document.getElementById("queryInput").focus();  // 确保焦点回输入框
+            };
+            dropdown.appendChild(item); // 这行是关键修复
+        });
+        dropdown.style.display = "block";
+    } else {
+        dropdown.style.display = "none";
+    }
+});
+
+document.addEventListener("click", function (e) {
+    const input = document.getElementById("queryInput");
+    const dropdown = document.getElementById("historyDropdown");
+    if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = "none";
+    }
+});
+</script>
+
+
+
+</body>
+</html>

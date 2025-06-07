@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>搜索历史</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-white">
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>搜索历史</h3>
+        <div>
+            <span>用户：{{ user }}</span>
+            <a href="/search" class="btn btn-outline-primary btn-sm"> 返回搜索 </a>
+            <a href="/logout" class="btn btn-outline-danger btn-sm"> 退出 </a>
+        </div>
+    </div>
+
+    {% if history %}
+        <ul class="list-group">
+            {% for q in history[::-1] %}  {# 倒序显示 #}
+                <li class="list-group-item">
+                    {{ q }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>暂无搜索历史记录</p>
+    {% endif %}
+</div>
+</body>
+</html>
